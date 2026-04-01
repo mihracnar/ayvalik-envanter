@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayvalık Kültürel Miras Envanteri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-wrap">
+      <img src="images/logo-ayvalik.png"
+           onerror="this.style.display='none'"
+           alt="Ayvalık Belediyesi">
+    </div>
+    <div class="header-title">
+      <h1>Kültürel Miras <em>Envanteri</em></h1>
+      <div class="header-subtitle">Ayvalık Belediyesi · Balıkesir</div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-num">1.855</div>
+      <div class="stat-label">Kayıtlı Yapı</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <div class="stat-num">81</div>
+      <div class="stat-label">Anıt</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <div class="stat-num alert" id="risk-count">—</div>
+      <div class="stat-label">Riskli Yapı</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <div class="stat-num" id="visible-count">—</div>
+      <div class="stat-label">Görüntülenen</div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-controls">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Eser adı veya mahalle…">
+      </div>
+      <div class="filter-row">
+        <select class="filter-select" id="filter-tur">
+          <option value="">Tüm Türler</option>
+          <option value="Dini Mimari">Dini Mimari</option>
+          <option value="Sivil Mimari">Sivil Mimari</option>
+          <option value="Su Yapısı">Su Yapısı</option>
+          <option value="Ticari Yapı">Ticari Yapı</option>
+          <option value="Kamusal Yapı">Kamusal Yapı</option>
+        </select>
+        <select class="filter-select" id="filter-koruma">
+          <option value="">Tüm Durumlar</option>
+          <option value="İyi">İyi</option>
+          <option value="Orta">Orta</option>
+          <option value="Kötü">Kötü</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <select class="filter-select" id="filter-tescil">
+          <option value="">Tüm Dereceler</option>
+          <option value="1. Derece">1. Derece</option>
+          <option value="2. Derece">2. Derece</option>
+          <option value="Tescil Önerisi">Tescil Önerisi</option>
+        </select>
+      </div>
+    </div>
+    <div class="results-list" id="results-list"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap">
+    <div id="map"></div>
+
+    <!-- Sağ üst bilgi kutuları -->
+    <div class="map-float">
+      <div class="glass-box">
+        <div class="glass-box-title">Alan Bilgisi</div>
+        <div class="glass-box-row">Statü: <strong>Kentsel Sit Alanı</strong></div>
+        <div class="glass-box-row">UNESCO: <strong>Geçici Liste</strong></div>
+        <div class="glass-box-row">İlan: <strong>1976</strong></div>
+      </div>
+
+      <div class="glass-box map-legend">
+        <div class="glass-box-title">Katmanlar</div>
+        <div class="legend-items" id="legend">
+          <div class="legend-item" data-type="Dini Mimari"><div class="legend-dot" style="background:#8b4a2f"></div><span>Dini Mimari</span><span class="legend-count">12</span></div>
+          <div class="legend-item" data-type="Sivil Mimari"><div class="legend-dot" style="background:#c8a96e"></div><span>Sivil Mimari</span><span class="legend-count">24</span></div>
+          <div class="legend-item" data-type="Su Yapısı"><div class="legend-dot"   style="background:#3d4f5c"></div><span>Su Yapısı</span><span class="legend-count">5</span></div>
+          <div class="legend-item" data-type="Ticari Yapı"><div class="legend-dot" style="background:#4a6741"></div><span>Ticari Yapı</span><span class="legend-count">8</span></div>
+          <div class="legend-item" data-type="Kamusal Yapı"><div class="legend-dot" style="background:#6b5b7a"></div><span>Kamusal Yapı</span><span class="legend-count">3</span></div>
+        </div>
+        <div class="legend-divider"></div>
+        <div class="glass-box-title">Kenarlık = Korunma</div>
+        <div class="koruma-legend-items">
+          <div class="koruma-legend-item"><div class="koruma-line" style="background:#4a6741"></div>İyi</div>
+          <div class="koruma-legend-item"><div class="koruma-line" style="background:#f9a825"></div>Orta</div>
+          <div class="koruma-legend-item"><div class="koruma-line" style="background:#8b4a2f;height:4px"></div>Kötü</div>
+          <div class="koruma-legend-item"><div class="koruma-line dashed"></div>Onay Bekliyor</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alt mod seçici -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode('tumu')">Tüm Eserler</button>
+      <button class="mode-btn"        onclick="setMode('risk')">Riskli Yapılar</button>
+      <button class="mode-btn"        onclick="setMode('taslak')">Onay Bekleyenler</button>
+    </div>
+
+    <div class="coord-bar">
+      <span class="coord-text" id="coord-display">39.3189° K  26.6956° D — Ayvalık, Balıkesir</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Leaflet → Veri → Uygulama (sıra önemli) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
